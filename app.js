@@ -14,7 +14,7 @@ var bodyParser = require('body-parser');
 var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('view engine', 'jade');
 http.createServer(app).listen(config.get('port'), function() {
     log.info('Express listening on port ' + config.get('port'));
 });
@@ -26,8 +26,8 @@ app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.get('/', function(req, res, next){
     res.render('index', {
-        title: 'title'
-//        body: '<b>Test</b>'
+//        title: 'title',
+        body: 'Test'
     });
 });
 app.use(express.static(path.join(__dirname, 'public')));
