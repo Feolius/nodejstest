@@ -1,5 +1,13 @@
 #header.navbar.navbar-default
-    .navbar-left.nav.navbar-default
-        a.main-nav(href="/") Main
-    .navbar-right.nav.navbar-default
-        a.right-nav.navbar-right(href="/login") Log In
+    ul.navbar-left.nav.navbar-default
+        li
+            a.main-nav(href="/") Main
+        li
+            if user
+                a.main-nav(href="/chat")
+    ul.navbar-right.nav.navbar-default
+        li
+            if user
+                a.right-nav.navbar-right(href="" onclick="$(<form method=\"POST\" action=\"/logout\"></form>).appendTo('body').submit(); return false;") LogOut
+            else
+                a.right-nav.navbar-right(href="/login") LogIn
