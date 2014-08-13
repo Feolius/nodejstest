@@ -9,7 +9,9 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var HttpError = require('error').HttpError;
 var errorHandler = require('errorhandler');
-var session = require('express-session')
+var session = require('express-session');
+var mongoose = require('libs/mongoose');
+var MongoStore = require('connect-mongo')(session);
 //
 //var routes = require('./routes/index');
 //var users = require('./routes/users');
@@ -27,6 +29,11 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
+app.use(session({
+    secret: config.get('session:secret'),
+    cookie: config.get('session:cookie'),
+    store: new MongoStore({mongoose_connection: mongoose.connection})
+}));
 
 app.use(express.static(path.join(__dirname, 'public')));
 

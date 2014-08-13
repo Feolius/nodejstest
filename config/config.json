@@ -9,5 +9,13 @@
                 }
             }
         }
+    },
+    "session" : {
+        "secret": "VanekKrasava",
+        "cookie": {
+            "path": "/",
+            "httpOnly": true,
+            "maxAge": 60000
+        }
     }
 }

@@ -1,0 +1,36 @@
+extends ./layout.jade
+block content
+    h1 Register and login
+    p Please enter your username and password here
+    form.login-form(name="login-form" method="POST")
+        .form-group
+            label(for="username")
+            input#username.form-control(type="text" name="username" placeholder="Enter username")
+        .form-group
+            label(for="password")
+            input#username.form-control(type="password" name="password" placeholder="Enter password")
+        button.btn.btn-default(type="submit") Submit
+    script.
+        $(document.forms['login-form']).on('submit', function(){
+            var form = $(this);
+
+            $('.error', form).html('');
+            $.ajax({
+                url: "/login",
+                method: "POST",
+                data: form.serialize(),
+                statusCode: {
+                    200: function() {
+                        form.html('You was succcesfully logged in');
+                        window.location.href = '/chat';
+                    },
+                    403: function(jqXHR) {
+                        var error = JSON.parse(jqXHR.responseText);
+                        $('.error', form).html(error.message);
+                    }
+
+                }
+            })
+            return false;
+        });
+
