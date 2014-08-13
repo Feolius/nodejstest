@@ -9,6 +9,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var HttpError = require('error').HttpError;
 var errorHandler = require('errorhandler');
+var session = require('express-session')
 //
 //var routes = require('./routes/index');
 //var users = require('./routes/users');
@@ -29,6 +30,7 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(require('middleware/sendHttpError'));
 require('routes')(app);
 
 ///// catch 404 and forward to error handler
@@ -44,7 +46,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         if(typeof err == 'number' ) {
-            err = new HttpError();
+            err = new HttpError(err);
         }
         if(err instanceof HttpError) {
             res.sendHttpError(err);
