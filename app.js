@@ -20,9 +20,13 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-http.createServer(app).listen(config.get('port'), function() {
+var server = http.createServer(app);
+require('libs/socketIO')(server);
+server.listen(config.get('port'), function() {
     log.info('Express listening on port ' + config.get('port'));
 });
+
+
 
 app.use(favicon());
 app.use(logger('dev'));

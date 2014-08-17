@@ -8,6 +8,16 @@
     ul.navbar-right.nav.navbar-default
         li
             if user
-                a.right-nav.navbar-right(href="" onclick="$(<form method=\"POST\" action=\"/logout\"></form>).appendTo('body').submit(); return false;") LogOut
+                a.right-nav.navbar-right(href="/logout") LogOut
             else
                 a.right-nav.navbar-right(href="/login") LogIn
+    if user
+        //script.
+        //    $(".navbar-right").click(function(){
+        //        $.ajax({
+        //            url: "/logout",
+        //            method: "POST"
+        //        });
+        //    return false;
+        //    });
+

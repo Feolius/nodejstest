@@ -1,5 +1,29 @@
 extends ./layout.jade
+block additionalScripts
+    script(src="/vendor/bower_components/socket.io-client/socket.io.js")
+    script.
+        $( document ).ready(function() {
+            var socket = io.connect();
+            var form = $('#room form');
+            var ul = $('#room ul');
+            form.submit(function() {
+                var input = $(this).find(':input');
+                var text = input.val();
+                socket.emit('message', text, function(data) {
+                    $('<li>', {text: data}).appendTo(ul);
+                });
+                input.val('');
+                return false;
+            })
+            socket.on('message', function (data) {
+                $('<li>', {text: data}).appendTo(ul);
+            });
+        });
 block content
-    h1 Here will be chat
+    h1 Chat
+    #room
+        ul
+        form
+            input.form-control(autocomplete="off", autofocus, placeholder="Message...")
     p Hello,
         = user.get('username')
