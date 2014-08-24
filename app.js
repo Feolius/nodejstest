@@ -21,7 +21,6 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 var server = http.createServer(app);
-require('libs/socketIO')(server);
 server.listen(config.get('port'), function() {
     log.info('Express listening on port ' + config.get('port'));
 });
@@ -36,6 +35,7 @@ app.use(cookieParser());
 app.use(session({
     secret: config.get('session:secret'),
     cookie: config.get('session:cookie'),
+    name: config.get('session:key'),
     store: new MongoStore({mongoose_connection: mongoose.connection})
 }));
 
@@ -43,6 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(require('middleware/sendHttpError'));
 app.use(require('middleware/loadUser'));
+require('libs/socketIO')(server);
 require('routes')(app);
 
 ///// catch 404 and forward to error handler

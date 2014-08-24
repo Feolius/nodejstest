@@ -12,6 +12,7 @@
     },
     "session" : {
         "secret": "VanekKrasava",
+        "key": "sid",
         "cookie": {
             "path": "/",
             "httpOnly": true,
