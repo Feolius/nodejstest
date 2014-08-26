@@ -15,6 +15,9 @@ block additionalScripts
             socket.on('join', function (username) {
                 printStatus(username + " join to chat");
             });
+            socket.on('session:reload', function() {
+                console.log('dsgsd');
+            })
             socket.on('leave', function (username) {
                 printStatus(username + " leave chat");
             });

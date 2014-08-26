@@ -89,28 +89,35 @@ module.exports = function(server) {
             });
         }
     });
-    io.on('session:reload', function(sid) {
-        var clients = io.sockets.clients();
-
-        clients.forEach(function (client) {
-            if(client.handshake.session.id != sid) return;
-
-            loadSession(sid, function(err, session) {
-               if(err) {
-                   client.emit('error');
-                   client.disconnect();
-                   return;
-               }
-
-                if(!session) {
-                    client.emit('error', "handshake unauthorised");
-                    client.disconnect();
-                    return;
-                }
-
-                client.handshake.session = session;
-            });
-        });
+    var router = require('socket.io-events')();
+    router.on(function (sock, args, next) {
+        var name = args.shift(), msg = args.shift();
+        console.log(name);
+//        sock.emit('received event', name, msg);
     });
+    io.use(router);
+//    io.on('session:reload', function(sid) {
+//        var clients = io.sockets.clients();
+//
+//        clients.forEach(function (client) {
+//            if(client.handshake.session.id != sid) return;
+//
+//            loadSession(sid, function(err, session) {
+//               if(err) {
+//                   client.emit('error');
+//                   client.disconnect();
+//                   return;
+//               }
+//
+//                if(!session) {
+//                    client.emit('error', "handshake unauthorised");
+//                    client.disconnect();
+//                    return;
+//                }
+//
+//                client.handshake.session = session;
+//            });
+//        });
+//    });
     return io;
 }
