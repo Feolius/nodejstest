@@ -3,27 +3,62 @@ block additionalScripts
     script(src="/vendor/bower_components/socket.io-client/socket.io.js")
     script.
         $( document ).ready(function() {
-            var socket = io.connect();
+            var socket = io.connect('http://localhost', {
+                reconnect: false
+            });
             var form = $('#room form');
             var ul = $('#room ul');
-            form.submit(function() {
-                var input = $(this).find(':input');
+            var input = $(this).find(':input');
+            socket.on('message', function (username, data) {
+                printMessage(username + " > " + data);
+            });
+            socket.on('join', function (username) {
+                printStatus(username + " join to chat");
+            });
+            socket.on('leave', function (username) {
+                printStatus(username + " leave chat");
+            });
+            socket.once('connect', function (username) {
+                printStatus("Connection established");
+                form.on('submit', sendMessage);
+                input.prop('disabled', false);
+            });
+            socket.on('disconnect', function (username) {
+                printStatus("Connection lost");
+                form.off('submit', sendMessage);
+                input.prop('disabled', true);
+                this.$emit('error');
+            });
+            socket.on('error', function(reason){
+                if(reason == 'handshake unauthorized') {
+                    printStatus("You left the chat");
+                } else {
+                    setTimeout(function(){
+                        socket.socket.connect();
+                    }, 500);
+                }
+            });
+
+            function sendMessage() {
                 var text = input.val();
-                socket.emit('message', text, function(data) {
-                    $('<li>', {text: data}).appendTo(ul);
+                socket.emit('message', text, function() {
+                    printMessage(text);
                 });
                 input.val('');
                 return false;
-            })
-            socket.on('message', function (data) {
-                $('<li>', {text: data}).appendTo(ul);
-            });
+            }
+            function printStatus(status) {
+                $('<li>').append($('<i>').text(status)).appendTo(ul);
+            }
+            function printMessage(text) {
+                $('<li>', {text: text}).appendTo(ul);
+            }
         });
 block content
     h1 Chat
     #room
         ul
         form
-            input.form-control(autocomplete="off", autofocus, placeholder="Message...")
+            input.form-control(autocomplete="off", autofocus, disabled=true, placeholder="Message...")
     p Hello,
         = user.get('username')

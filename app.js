@@ -10,11 +10,6 @@ var bodyParser = require('body-parser');
 var HttpError = require('error').HttpError;
 var errorHandler = require('errorhandler');
 var session = require('express-session');
-var mongoose = require('libs/mongoose');
-var MongoStore = require('connect-mongo')(session);
-//
-//var routes = require('./routes/index');
-//var users = require('./routes/users');
 
 var app = express();
 // view engine setup
@@ -25,8 +20,6 @@ server.listen(config.get('port'), function() {
     log.info('Express listening on port ' + config.get('port'));
 });
 
-
-
 app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -36,14 +29,15 @@ app.use(session({
     secret: config.get('session:secret'),
     cookie: config.get('session:cookie'),
     name: config.get('session:key'),
-    store: new MongoStore({mongoose_connection: mongoose.connection})
+    store: require('libs/sessionStore')(session)
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(require('middleware/sendHttpError'));
 app.use(require('middleware/loadUser'));
-require('libs/socketIO')(server);
+var io = require('libs/socketIO')(server);
+app.set('io', io);
 require('routes')(app);
 
 ///// catch 404 and forward to error handler
