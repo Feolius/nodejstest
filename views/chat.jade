@@ -3,7 +3,7 @@ block additionalScripts
     script(src="/socket.io/socket.io.js")
     script.
         $( document ).ready(function() {
-            var socket = io.connect('http://localhost');
+            var socket = io.connect('');
             var form = $('#room form');
             var ul = $('#room ul');
             var input = $(this).find(':input');
