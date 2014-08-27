@@ -1,11 +1,9 @@
 extends ./layout.jade
 block additionalScripts
-    script(src="/vendor/bower_components/socket.io-client/socket.io.js")
+    script(src="/socket.io/socket.io.js")
     script.
         $( document ).ready(function() {
-            var socket = io.connect('http://localhost', {
-                reconnect: false
-            });
+            var socket = io.connect('http://localhost');
             var form = $('#room form');
             var ul = $('#room ul');
             var input = $(this).find(':input');
@@ -15,11 +13,16 @@ block additionalScripts
             socket.on('join', function (username) {
                 printStatus(username + " join to chat");
             });
-            socket.on('session:reload', function() {
-                console.log('dsgsd');
+            socket.on('session:reload', function(sid) {
+               // this.emit('session:reload', sid);
             })
             socket.on('leave', function (username) {
                 printStatus(username + " leave chat");
+            });
+            socket.on('reconnect', function() {
+                printStatus("Connection established");
+                form.on('submit', sendMessage);
+                input.prop('disabled', false);
             });
             socket.once('connect', function (username) {
                 printStatus("Connection established");
@@ -30,14 +33,14 @@ block additionalScripts
                 printStatus("Connection lost");
                 form.off('submit', sendMessage);
                 input.prop('disabled', true);
-                this.$emit('error');
+                this.emit('error');
             });
-            socket.on('error', function(reason){
-                if(reason == 'handshake unauthorized') {
+            socket.on('sock:error', function(reason){
+                if(reason == "handshake unauthorised") {
                     printStatus("You left the chat");
                 } else {
                     setTimeout(function(){
-                        socket.socket.connect();
+                        socket.connect();
                     }, 500);
                 }
             });
@@ -45,7 +48,7 @@ block additionalScripts
             function sendMessage() {
                 var text = input.val();
                 socket.emit('message', text, function() {
-                    printMessage(text);
+                    printMessage( "me > " + text);
                 });
                 input.val('');
                 return false;

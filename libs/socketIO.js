@@ -1,5 +1,4 @@
 var log = require('libs/log')(module);
-var cookie = require('cookie');
 var config = require('config');
 var cookieParser = require('cookie-parser')(config.get('session:secret'));
 var async = require('async');
@@ -19,18 +18,18 @@ function loadSession(sid, callback) {
 }
 
 function loadUser(session, callback) {
+    if(!session) {
+        return callback(null, null);
+    }
     if(!session.user) {
-        log.debug("Session %s is anonymous", session.id);
         return callback(null, null);
     }
 
-    log.debug("Retrieving user ", session.user);
     User.findById(session.user, function(err, user) {
         if(err) return callback(err);
         if(!user) {
             callback(null, null);
         }
-        log.debug("User find: ", user);
         callback(null, user);
     })
 }
@@ -56,6 +55,10 @@ module.exports = function(server) {
                 }
             });
         }, function(session, callback) {
+            if(!session) {
+                callback(new HttpError(401, "No session"));
+            }
+            socket.handshake.session = session;
             loadUser(session, callback);
         }, function(user, callback) {
             if(!user) {
@@ -69,6 +72,7 @@ module.exports = function(server) {
         next();
     });
     io.on('connection', function (socket) {
+        console.log("fd");
         var user = socket.handshake.user;
         if(user) {
             var username = user.get('username');
@@ -89,35 +93,31 @@ module.exports = function(server) {
             });
         }
     });
-    var router = require('socket.io-events')();
-    router.on(function (sock, args, next) {
-        var name = args.shift(), msg = args.shift();
-        console.log(name);
-//        sock.emit('received event', name, msg);
+    io.engine.on('session:reload', function(sid) {
+        var clients = io.sockets.sockets;
+
+        clients.forEach(function (client) {
+            log.debug("Session ", sid);
+            log.debug("Session ", client.handshake.session);
+
+            if(!client.handshake.session || client.handshake.sid != sid) return;
+
+            loadSession(sid, function(err, session) {
+               if(err) {
+                   client.emit('sock:error');
+                   client.disconnect();
+                   return;
+               }
+
+                if(!session) {
+                    client.emit('sock:error', "handshake unauthorised");
+                    client.disconnect();
+                    return;
+                }
+
+                client.handshake.session = session;
+            });
+        });
     });
-    io.use(router);
-//    io.on('session:reload', function(sid) {
-//        var clients = io.sockets.clients();
-//
-//        clients.forEach(function (client) {
-//            if(client.handshake.session.id != sid) return;
-//
-//            loadSession(sid, function(err, session) {
-//               if(err) {
-//                   client.emit('error');
-//                   client.disconnect();
-//                   return;
-//               }
-//
-//                if(!session) {
-//                    client.emit('error', "handshake unauthorised");
-//                    client.disconnect();
-//                    return;
-//                }
-//
-//                client.handshake.session = session;
-//            });
-//        });
-//    });
     return io;
 }
